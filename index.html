@@ -1,0 +1,50 @@
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.3/socket.io.js"></script>
+<script>
+var CHILL_DSD_PORT = 34455;
+
+var SOCKET_CONNECT = 'connect';
+var SOCKET_FRONTEND_NS = '/frontend';
+var SOCKET_DISCONNECT = 'disconnect';
+
+var SERVICE_STOP = 'service-stop';
+var SERVICE_START = 'service-start';
+var SERVICE_STATUS_CHANGED = 'service-status-changed';
+
+var frontendSocket = io(
+    'http://localhost:'+CHILL_DSD_PORT+SOCKET_FRONTEND_NS,
+    { reconnect: true }
+);
+
+frontendSocket.on(SOCKET_CONNECT, function () {
+    console.log('FRONTEND-SOCKET connected');
+});
+
+frontendSocket.on(SERVICE_STATUS_CHANGED, function (payload) {
+    console.log('FRONTEND-SOCKET service status changed', payload);
+});
+
+frontendSocket.on(SOCKET_DISCONNECT, function () {
+    console.log('FRONTEND-SOCKET disconnected');
+});
+
+var startPayload = {
+    id: 1,
+    maxRetry: 5,
+    method: 'OPTIONS',
+    name: 'Localhost',
+    minInterval: 1000,
+    maxInterval: 10000,
+    downStatus: '^(5..|4..)$',
+    url: 'http://localhost:3000'
+}
+
+function serviceStart(payload) {
+    frontendSocket.emit(SERVICE_START, payload);
+}
+
+var stopPayload = { id: 1 };
+function serviceStop(payload){
+    frontendSocket.emit(SERVICE_STOP, payload);
+}
+</script>
